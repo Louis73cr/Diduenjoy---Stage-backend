@@ -1,12 +1,13 @@
 class OrderParser
-    attr_accessor :packageID_index, :itemID_index, :label_index, :value_index
+    attr_accessor :packageID_index, :itemID_index, :label_index, :value_index, :debugMode
 
-    def initialize
+    def initialize(debug_mode = false)
         @packageID_index = nil
         @itemID_index = nil
         @label_index = nil
         @value_index = nil
         @order_data = {}
+        @debugMode = debug_mode
     end
 
     def validate_file_format(worksheet)
@@ -24,12 +25,14 @@ class OrderParser
         end
 
         if [@packageID_index, @itemID_index, @label_index, @value_index].any?(&:nil?)
-        puts "Invalid file format. Please ensure the file contains 4 columns: [packages, items, labels, values]"
-        exit
+            if (debugMode)
+                puts "[ERROR] Invalid file format. Please ensure the file contains 4 columns: [packages, items, labels, values]"
+            end
+            exit
         end
     end
 
-    def validateCell(cell)
+    def validate_cell(cell)
         if cell.nil?
             return ""
         else
@@ -38,15 +41,21 @@ class OrderParser
     end
 
     def read_worksheet(worksheet)
-        row_index = 1
 
         worksheet.each_with_index do |row, row_index|
+            next if row_index == 0
             next if row.cells.compact.empty?
 
-            package_id = validateCell(row.cells[@packageID_index])
-            item_id = validateCell(row.cells[@itemID_index])
-            label = validateCell(row.cells[@label_index])
-            value = validateCell(row.cells[@value_index])
+            package_id = validate_cell(row.cells[@packageID_index])
+            item_id = validate_cell(row.cells[@itemID_index])
+            label = validate_cell(row.cells[@label_index])
+            value = validate_cell(row.cells[@value_index])
+            if (package_id == "" || item_id == "" || label == "" || value == "")
+                if (debugMode)
+                    puts "[ERROR] Invalid row format. Please ensure each row contains 4 columns: [packages, items, labels, values]"
+                end
+                next
+            end
 
             if !@order_data.key?(package_id)
                 @order_data[package_id] = { items: {} }

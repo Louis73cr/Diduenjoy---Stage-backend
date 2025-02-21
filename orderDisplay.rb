@@ -1,7 +1,12 @@
-def display_order(all_order_data)
-    all_order_data.each do |sheet_name, orders|
-        puts "Order: #{sheet_name}"
-        orders.each do |package_id, package|
+def display_orders(all_order_data, debug_mode = false)
+    if debug_mode
+        puts "[INFO] Displaying orders"
+    end
+  
+    puts "========== ORDER =========="
+    all_order_data.each do |index, data|
+        puts "Order : n°#{index} | #{data[:sheet_name]}"
+        data[:package].each do |package_id, package|
             puts "  Package ID: #{package_id}"
             package[:items].each do |item_id, item|
                 puts "    Item ID: #{item_id}"
@@ -11,4 +16,6 @@ def display_order(all_order_data)
             end
         end
     end
+    puts "==========================="
 end
+  
